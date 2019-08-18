@@ -1,0 +1,81 @@
+---
+title: "DTI_Organize"
+author: "Lucinda Sisk"
+date: "4/5/2019"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(readxl)
+
+#UPDATE THESE TWO VARIABLES EACH TIME YOU RUN THE SCRIPT
+date <- '4.10.19'
+tract <- 'Uncinate'
+
+#Path from which to pull the data, and path to write the data to
+curated <- '/Volumes/mooddata/TIGER/ANALYSES/CURATED DATA SHEETS'
+source <- '/Volumes/iang/TIGER_data/TIGER_DTI_Analysis/TIGER-T1/matproc/AFQ_results'
+
+tract_path <-paste(source, '/', tract, '/', tract,'_DTI_dataextraction_TIGER_T1.xlsx', sep='')
+
+```
+
+
+```{r}
+#Read in spreadsheets and extract values
+
+df_ad_L <- 
+  read_excel(tract_path, sheet=paste('L_',tract,'_AD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('L.', tract,'.AD.T1.mean', sep=''))
+  
+df_ad_R <- 
+  read_excel(tract_path, sheet=paste('R_',tract,'_AD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('R.', tract,'.AD.T1.mean', sep=''))
+
+df_fa_L <- 
+  read_excel(tract_path, sheet=paste('L_',tract,'_FA', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('L.', tract,'.FA.T1.mean', sep=''))
+  
+df_fa_R <- 
+  read_excel(tract_path, sheet=paste('R_',tract,'_FA', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('R.', tract,'.FA.T1.mean', sep=''))
+
+df_md_L <- 
+  read_excel(tract_path, sheet=paste('L_',tract,'_MD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('L.', tract,'.MD.T1.mean', sep=''))
+
+df_md_R <- 
+  read_excel(tract_path, sheet=paste('R_',tract,'_MD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('R.', tract,'.MD.T1.mean', sep=''))
+  
+df_rd_L <- 
+  read_excel(tract_path, sheet=paste('L_',tract,'_RD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('L.', tract,'.RD.T1.mean', sep=''))
+
+df_rd_R <- 
+  read_excel(tract_path, sheet=paste('R_',tract,'_RD', sep='')) %>%
+  select('subject ID', 'Age at Scan', paste('R.', tract,'.RD.T1.mean', sep=''))
+  
+
+```
+
+```{r}
+#Merge spreadsheets pairwise
+
+m1 <- merge(df_fa_L, df_fa_R, on = 'subject ID', all=T) 
+m2 <- merge(m1, df_ad_L, on = 'subject ID', all=T)
+m3 <- merge(m2, df_ad_R, on = 'subject ID', all=T)
+m4 <- merge(m3, df_md_L, on = 'subject ID', all=T)
+m5 <- merge(m4, df_md_R, on = 'subject ID', all=T)
+m6 <- merge(m5, df_rd_L, on = 'subject ID', all=T)
+m7 <- merge(m6, df_rd_R, on = 'subject ID', all=T)
+
+
+#Clean final dataframe, rename variables, write to CSV
+final <- m7 %>%
+  rename('ID' = 'subject ID') %>%
+  rename('Age.at.DTI' = 'Age at Scan') %>%
+  write_csv(paste(curated, '/TIGER_',tract,'_DTI_',date,'.csv', sep=''))
+
+
+```
