@@ -13,4 +13,4 @@
 path='/gpfs/milgram/scratch60/gee_dylan/lms233/imputed'
 
 cd $path
-gzip -d *.gz
+gzip -d chr${1}*.gz
